@@ -1,0 +1,112 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <ctime>
+#include <cstdlib>
+
+using namespace std;
+
+class KartEslestirmeOyunu {
+private:
+    vector<vector<string>> tahta;
+    vector<vector<bool>> acikMi;
+    int oyuncuSirasi;
+
+    void tahtaGoster() {
+        cout << "\n   ";
+        for (size_t j = 0; j < tahta[0].size(); ++j) {
+            cout << j << " ";
+        }
+        cout << "\n";
+
+        for (size_t i = 0; i < tahta.size(); ++i) {
+            cout << i << "  ";
+            for (size_t j = 0; j < tahta[i].size(); ++j) {
+                if (acikMi[i][j]) {
+                    cout << tahta[i][j] << " ";
+                } else {
+                    cout << "X ";
+                }
+            }
+            cout << "\n";
+        }
+    }
+
+    void tahtaBaslat() {
+        vector<string> kartlar = {"Elma", "Elma", "Armut", "Armut", "Cilek", "Cilek", "Kiraz", "Kiraz"};
+        random_device rd;
+        mt19937 g(rd());
+        shuffle(kartlar.begin(), kartlar.end(), g);
+
+        int k = 0;
+        for (size_t i = 0; i < tahta.size(); ++i) {
+            for (size_t j = 0; j < tahta[i].size(); ++j) {
+                tahta[i][j] = kartlar[k++];
+            }
+        }
+    }
+
+    bool oyunBittiMi() {
+        return all_of(acikMi.begin(), acikMi.end(), [](const vector<bool>& satir) {
+            return all_of(satir.begin(), satir.end(), [](bool val) { return val; });
+        });
+    }
+
+public:
+    KartEslestirmeOyunu() : tahta(2, vector<string>(4)), acikMi(2, vector<bool>(4, false)), oyuncuSirasi(1) {
+        tahtaBaslat();
+    }
+
+    void oyna() {
+        bool oyunBitti = false;
+
+        while (!oyunBitti) {
+            tahtaGoster();
+
+            cout << "\nOyuncu " << oyuncuSirasi << "'nin sirasi.\n";
+            int satir1, sutun1, satir2, sutun2;
+
+            cout << "Birinci kartin satir ve sutununu girin: ";
+            cin >> satir1 >> sutun1;
+            while (satir1 < 0 || satir1 >= 2 || sutun1 < 0 || sutun1 >= 4 || acikMi[satir1][sutun1]) {
+                cout << "Gecersiz girdi. Tekrar deneyin: ";
+                cin >> satir1 >> sutun1;
+            }
+
+            cout << "Ikinci kartin satir ve sutununu girin: ";
+            cin >> satir2 >> sutun2;
+            while (satir2 < 0 || satir2 >= 2 || sutun2 < 0 || sutun2 >= 4 || acikMi[satir2][sutun2] || (satir1 == satir2 && sutun1 == sutun2)) {
+                cout << "Gecersiz girdi. Tekrar deneyin: ";
+                cin >> satir2 >> sutun2;
+            }
+
+            acikMi[satir1][sutun1] = true;
+            acikMi[satir2][sutun2] = true;
+
+            tahtaGoster();
+
+            if (tahta[satir1][sutun1] == tahta[satir2][sutun2]) {
+                cout << "\nEslesme bulundu! Oyuncu " << oyuncuSirasi << " bir puan kazandi!\n";
+            } else {
+                cout << "\nEslesme yok. Kartlar tekrar kapatilacak.\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n-\n";
+                acikMi[satir1][sutun1] = false;
+                acikMi[satir2][sutun2] = false;
+            }
+
+            oyunBitti = oyunBittiMi();
+
+            if (!oyunBitti) {
+                oyuncuSirasi = (oyuncuSirasi == 1) ? 2 : 1;
+            }
+        }
+
+        cout << "\nTebrikler! Oyuncu " << oyuncuSirasi << " oyunu kazandi!\n";
+    }
+};
+
+int main() {
+    KartEslestirmeOyunu oyun;
+    oyun.oyna();
+    return 0;
+}
