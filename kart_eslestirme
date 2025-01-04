@@ -71,22 +71,18 @@ public:
     }
 
     void goster() const {
-        cout << "\n   ";
-        for (size_t j = 0; j < kartlar[0].size(); ++j) {
-            cout << j << "  ";
-        }
-        cout << "\n";
-
+        cout << "\n     0           1           2           3\n";
+        cout << "   +-----------+-----------+-----------+-----------+\n";
         for (size_t i = 0; i < kartlar.size(); ++i) {
-            cout << i << "  ";
+            cout << " " << i << " |";
             for (size_t j = 0; j < kartlar[i].size(); ++j) {
                 if (acikMi[i][j]) {
-                    cout << kartlar[i][j].getTur() << "  ";
+                    cout << "   " << kartlar[i][j].getTur() << "   |";
                 } else {
-                    cout << "X  ";
+                    cout << "     X     |";
                 }
             }
-            cout << "\n";
+            cout << "\n   +-----------+-----------+-----------+-----------+\n";
         }
     }
 
@@ -100,6 +96,10 @@ public:
 
     string getKartTur(int satir, int sutun) const {
         return kartlar[satir][sutun].getTur();
+    }
+
+    void kaliciAc(int satir, int sutun) {
+        acikMi[satir][sutun] = true;
     }
 
     void kapat(int satir, int sutun) {
@@ -150,13 +150,52 @@ public:
             if (tahta.getKartTur(satir1, sutun1) == tahta.getKartTur(satir2, sutun2)) {
                 cout << "\nEslesme bulundu! Oyuncu " << aktifOyuncu->getId() << " bir puan kazandi!\n";
                 aktifOyuncu->puanEkle();
+                tahta.kaliciAc(satir1, sutun1);
+                tahta.kaliciAc(satir2, sutun2);
+
+                char devam;
+                while (true) {
+                    try {
+                        cout << "Devam etmek istiyor musunuz? (e/h): ";
+                        cin >> devam;
+                        if (cin.fail() || (devam != 'e' && devam != 'h') || cin.peek() != '\n') {
+                            throw runtime_error("Gecersiz girdi. Lutfen 'e' veya 'h' girin.");
+                        }
+                        break;
+                    } catch (const exception& e) {
+                        cout << e.what() << endl;
+                        cin.clear();
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    }
+                }
+
+                if (devam == 'h') {
+                    aktifOyuncu = (aktifOyuncu == &oyuncu1) ? &oyuncu2 : &oyuncu1;
+                }
+                continue;
             } else {
                 cout << "\nEslesme yok. Kartlar tekrar kapatilacak.\n";
+
+                char devam;
+                while (true) {
+                    try {
+                        cout << "Devam etmek icin bir tusa basin: ";
+                        cin >> devam;
+                        if (cin.fail() || cin.peek() != '\n') {
+                            throw runtime_error("Gecersiz girdi. Lutfen tek bir karakter girin.");
+                        }
+                        break;
+                    } catch (const exception& e) {
+                        cout << e.what() << endl;
+                        cin.clear();
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    }
+                }
+
                 tahta.kapat(satir1, sutun1);
                 tahta.kapat(satir2, sutun2);
+                aktifOyuncu = (aktifOyuncu == &oyuncu1) ? &oyuncu2 : &oyuncu1;
             }
-
-            aktifOyuncu = (aktifOyuncu == &oyuncu1) ? &oyuncu2 : &oyuncu1;
         }
 
         cout << "\nOyun bitti!\n";
